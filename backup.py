@@ -23,6 +23,8 @@ a = queue.Queue()
 b = queue.Queue()
 if len(sys.argv) >= 3:
     backup_id += " " + sys.argv[2]
+else:
+    backup_id += " " + sys.argv[1]
 block_index = 0
 block = []
 block_size = 0

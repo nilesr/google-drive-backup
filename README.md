@@ -14,4 +14,5 @@ There is currently no automated way to restore backed up files but it could be d
 
 # Planned updates
 
-- Remembering the last time you backed up a directory and automatically generating the correct number of seconds
+- Remembering the last time you backed up a directory (or fetching it from the server) and automatically generating the correct number of seconds
+- Splitting files larger than the maximum block size using `split`
