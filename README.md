@@ -3,8 +3,11 @@ Depends on gsync
 # Usage
 
 `python3 backup.py {filename} [name of backup] [epoch of the last backup]`
+
 Only the filename is required to make a backup, a name just makes it easier to identify which folder you backed up on the server
+
 It will prompt for a passcode which will be used to encrypt the files before uploading (can't have the school snooping through our home directory now can we)
+
 The epoch of each backup is stored in the folder it's put in on the server, partially to allow you to grab it easily, and partially so the backups will display in chronological order in the web client
 
 # Google drive backup
