@@ -78,8 +78,10 @@ def generate_daemon(a,b):
         if idx != len(blocks) - 1:
             generate(*blocks[idx+1])
         assert(b.get() == idx)
-        a.put(idx + 1)
+        if idx != len(blocks) - 1:
+            a.put(idx + 1)
         idx += 1
+    sys.exit(0)
 def sync_daemon(a,b):
     while True:
         temp = a.get()
