@@ -7,8 +7,17 @@ max_block_size = 1024*1024*256 # 256mb probably
 max_block_size = 1024*1024*128
 base_tmp = "/tmp/"
 tmp = subprocess.check_output(["mktemp", "-d",base_tmp + "backup.XXXXX"]).decode("utf-8").strip() + "/"
-files = subprocess.check_output(["find", sys.argv[1], "-type","f","-print0"]).decode("utf-8").split("\0")[:-1]
-backup_id = subprocess.check_output(["date", "+%s"]).decode("utf-8")
+backup_id = subprocess.check_output(["date", "+%s"]).decode("utf-8").strip()
+last_backup_time = False
+if len(sys.argv) > 3:
+    last_backup_time = sys.argv[3]
+    temp_newer = subprocess.check_output(["mktemp", base_tmp + "backup.XXXXX"]).decode("utf-8").strip()
+    print(["touch","-d","-" + str(int(backup_id) - int(last_backup_time)) + " seconds", temp_newer])
+    subprocess.call(["touch","-d","-" + str(int(backup_id) - int(last_backup_time)) + " seconds", temp_newer])
+    mtime_arg = ["-newer", temp_newer]
+else:
+    mtime_arg = []
+files = subprocess.check_output(["find", sys.argv[1], "-type","f",*mtime_arg,"-print0"]).decode("utf-8").split("\0")[:-1]
 blocks = []
 a = queue.Queue()
 b = queue.Queue()
@@ -32,6 +41,7 @@ for file in files:
         block = [file]
         block_size = new_file_size
     # print()
+print(str(len(files)) + " files")
 print(str(len(blocks)) + " blocks")
 blocks.sort(key=lambda x: x[0]) # Totally unclear why this is needed but it is
 input("Press a key to continue")
