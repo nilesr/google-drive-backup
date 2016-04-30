@@ -6,8 +6,7 @@ base_tmp = "/tmp/"
 # Procedure Division
 import subprocess, os, glob, sys, getpass, queue, threading
 passphrase = getpass.getpass("Passphrase: ")
-passphrase2 = getpass.getpass("Confirm passphrase: ")
-assert(passphrase == passphrase2)
+assert(passphrase == getpass.getpass("Confirm passphrase: "))
 # Creates a randomly named directory in base_tmp
 tmp = subprocess.check_output(["mktemp", "-d",base_tmp + "backup.XXXXX"]).decode("utf-8").strip() + "/"
 # Backup ID is the current unix epoch (THIS WILL CHANGE LATER IN THE PROGRAM)
