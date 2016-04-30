@@ -19,3 +19,4 @@ There is currently no automated way to restore backed up files but it could be d
 
 - Remembering the last time you backed up a directory (or fetching it from the server) and automatically generating the correct number of seconds
 - Splitting files larger than the maximum block size using `split`
+- Redirecting gsync's output to a pipe and creating another thread to read from it and print out the upload percentage to the user on the right using an ncurses library, instead of what we currently do which is either redirect it to /dev/null or display the whole output to the user, which gets interrupted when the generation of a block finishes.

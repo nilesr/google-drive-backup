@@ -25,7 +25,8 @@ else:
 # We need the [:-1] because there's a trailing null byte at the end of find's output, leading to an empty string in the list
 files = subprocess.check_output(["find", sys.argv[1], "-type","f",*mtime_arg,"-print0"]).decode("utf-8").split("\0")[:-1]
 blocks = []
-null = open(os.devnull, "w") # We will redirect tar's output to this later
+null = open(os.devnull, "w") # We will redirect the output of tar and other command to this later
+# Ordinarily we would redirect to something like subprocess.PIPE but if the pipe fills up the process will deadlock, and we're not reading from it at all, so that could be a problem
 a = queue.Queue()
 b = queue.Queue()
 # If we were passed a backup name, use that in the backup id, otherwise use the folder
