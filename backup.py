@@ -58,7 +58,7 @@ for file in files:
 print(str(len(files)) + " files")
 print(str(len(blocks)) + " blocks")
 blocks.sort(key=lambda x: x[0]) # The last two blocks will sometimes be out of order, this makes them sequential
-input("Press a key to continue")
+input("Press enter to continue")
 
 def generate(block_index, block):
     print("Generating block " + str(block_index))
@@ -97,7 +97,7 @@ def generate_daemon(a,b):
     while idx != len(blocks):
         if idx != len(blocks) - 1:
             generate(*blocks[idx+1])
-        assert(b.get() == idx)
+        assert(b.get() == idx) # This will block until the sync is done btw
         if idx != len(blocks) - 1:
             a.put(idx + 1)
         idx += 1
