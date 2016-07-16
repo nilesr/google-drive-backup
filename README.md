@@ -2,13 +2,15 @@ Depends on gsync
 
 # Usage
 
-`python3 backup.py {filename} [name of backup] [epoch of the last backup]`
+`python3 backup.py {filename} [name of backup] [epoch of the last backup] [--exclude=folder_name [--exclude=folder_two_name [...]]]`
 
 Only the filename is required to make a backup, a name just makes it easier to identify which folder you backed up on the server
 
 It will prompt for a passcode which will be used to encrypt the files before uploading (can't have the school snooping through our home directory now can we)
 
 The epoch of each backup is stored in the folder it's put in on the server, partially to allow you to grab it easily, and partially so the backups will display in chronological order in the web client
+
+Note that excludes are relative to the filename passed as the first argument, so if the first argument is `/home/niles/`, then `--exclude=Documents/projects` would be a valid argument, however `--exclude=/home/niles/Documents/projects` would not be.
 
 # Google drive backup
 

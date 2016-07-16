@@ -4,13 +4,24 @@
 max_block_size = 1024*1024*128
 base_tmp = "/tmp/"
 # Procedure Division
-import subprocess, os, glob, sys, getpass, queue, threading
+import subprocess, os, glob, sys, getpass, queue, threading, copy
+def human_readable_size(size):
+    units = ["Bytes", "Kilobytes", "Megabytes", "Gigabytes", "Terabytes"]
+    unit = 0
+    size = float(size)
+    while size > 1000:
+        if unit < len(units):
+            size /= 1024
+            unit += 1
+        else: break
+    return str(size)[:5] + " " + units[unit]
 passphrase = getpass.getpass("Passphrase: ")
 assert(passphrase == getpass.getpass("Confirm passphrase: "))
 # Creates a randomly named directory in base_tmp
 tmp = subprocess.check_output(["mktemp", "-d",base_tmp + "backup.XXXXX"]).decode("utf-8").strip() + "/"
 # Backup ID is the current unix epoch (THIS WILL CHANGE LATER IN THE PROGRAM)
 backup_id = subprocess.check_output(["date", "+%s"]).decode("utf-8").strip()
+print("Calculating files to be backed up for backup ID " + str(backup_id))
 last_backup_time = False
 if len(sys.argv) > 3: # If we were passed the epoch of the last backup
     last_backup_time = sys.argv[3]
@@ -21,8 +32,22 @@ if len(sys.argv) > 3: # If we were passed the epoch of the last backup
     mtime_arg = ["-newer", temp_newer]
 else:
     mtime_arg = []
+excludes = []
+excludes_dict = {}
+if len(sys.argv) > 4:
+    for exclude in sys.argv[4:]:
+        excludes.append(exclude.replace("--exclude=",""))
+for exclude in excludes:
+    excludes_dict[exclude] = 0
 # We need the [:-1] because there's a trailing null byte at the end of find's output, leading to an empty string in the list
 files = subprocess.check_output(["find", sys.argv[1], "-type","f",*mtime_arg,"-print0"]).decode("utf-8").split("\0")[:-1]
+if sys.argv[1][-1] == "/": sys.argv[1] = sys.argv[1][:-1]
+before_len_files = len(files)
+for f in copy.deepcopy(files):
+    for exclude in excludes:
+        if f[:len(exclude) + len(sys.argv[1]) + 2] == sys.argv[1] + "/" + exclude + "/":
+            excludes_dict[exclude] += 1
+            del files[files.index(f)]
 blocks = []
 null = open(os.devnull, "w") # We will redirect the output of tar and other command to this later
 # Ordinarily we would redirect to something like subprocess.PIPE but if the pipe fills up the process will deadlock, and we're not reading from it at all, so that could be a problem
@@ -36,8 +61,10 @@ else:
 block_index = 0
 block = []
 block_size = 0
+total_size = 0
 for file in files:
     new_file_size = os.stat(file).st_size
+    total_size += new_file_size
     # If the new block size would be less than the maximum, or the block is empty, add it to the current block and continue.
     # If it's the last file in the list, jump straight to the else
     if (block_size + new_file_size < max_block_size or len(block) == 0) and file != files[-1]:
@@ -55,8 +82,13 @@ for file in files:
         block_index += 1
         block = [file]
         block_size = new_file_size
-print(str(len(files)) + " files")
+for exclude, excluded in excludes_dict.items():
+    print(exclude + ": excluded " + str(excluded) + " files")
+if len(excludes) > 0:
+    print(str(-len(files) + before_len_files) + " files were excluded in total")
+print(str(len(files)) + " files to be backed up")
 print(str(len(blocks)) + " blocks")
+print(human_readable_size(total_size))
 blocks.sort(key=lambda x: x[0]) # The last two blocks will sometimes be out of order, this makes them sequential
 input("Press enter to continue")
 
