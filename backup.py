@@ -133,7 +133,7 @@ def generate(block_index, block):
     f.write("\n".join(block))
     f.close()
     if len(block) > 1:
-        subprocess.call(["tar", "-cJvf", tmp + str(block_index) + "/" + str(block_index) + ".txz", *block], stdout=null) # The -v was for debug earlier, never bothered to remove it. It's not hurting anything
+        subprocess.call(["tar", "-c", "--use-compress-program=pigz", "-f", tmp + str(block_index) + "/" + str(block_index) + ".tar.gz", *block], stdout=null)
         # z -> gzip
         # j -> bzip2
         # J -> xz
@@ -144,12 +144,15 @@ def generate(block_index, block):
         subprocess.call(["gpg2", "-c", "--passphrase",passphrase,"--batch", "--yes", old_file], stdout=null)
         os.remove(old_file) # Remove the unencrypted ones
     print("Block " + str(block_index) + " generated")
-def sync(block_index):
+def sync(block_index, backup_folder):
     # Just upload our temporary directory (default) /tmp/backup.XXXXX/:block_index to drive://Backup/:backup_id
     print("Syncing block " + str(block_index))
     while True:
         try:
-            subprocess.check_call(["gsync", "-vrt", "--progress", tmp + str(block_index) + "/", "drive://Backup/" + backup_id], stdout=sys.stdout) # Change this to null to remove output
+            local_folder = tmp + str(block_index) + "/"
+            for f in glob.glob(local_folder + "*"):
+                print("Syncing " + f)
+                subprocess.check_call(["python3", "sample.py", "upload", f, os.path.basename(f), backup_folder])
             break
         except:
             pass
@@ -181,12 +184,13 @@ def generate_daemon(a,b):
     #subprocess.call(["rm", "-rf", ".backup_restore_" + backup_id])
     sys.exit(0)
 def sync_daemon(a,b):
+    backup_folder = subprocess.check_output(["python3", "sample.py", "create", "root", backup_id]).strip()
     # Sync what the cooler thread tells us to sync, then tell it when we're done
     while True:
         temp = a.get()
         if temp == "die":
             sys.exit(0)
-        sync(temp)
+        sync(temp, backup_folder)
         b.put(temp)
 generate_thread = threading.Thread(target=generate_daemon, args=(a, b))
 generate_thread.start()
