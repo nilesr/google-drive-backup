@@ -2,11 +2,15 @@ Depends on gsync
 
 # Usage
 
+The first time you run it, it needs you to sign in to google drive. Do this by following steps 1 and 2 [here](https://developers.google.com/drive/v3/web/quickstart/python), then running `python3 sample.py`
+
+To make a backup, run it like this
+
 `python3 backup.py {filename} [name of backup] [epoch of the last backup] [--exclude=folder_name [--exclude=folder_two_name [...]]]`
 
 Only the filename is required to make a backup, a name just makes it easier to identify which folder you backed up on the server
 
-It will prompt for a passcode which will be used to encrypt the files before uploading (can't have the school snooping through our home directory now can we)
+It will prompt for a passcode which will be used to encrypt the files before uploading
 
 The epoch of each backup is stored in the folder it's put in on the server, partially to allow you to grab it easily, and partially so the backups will display in chronological order in the web client
 
@@ -19,6 +23,4 @@ There is currently no automated way to restore backed up files but it could be d
 
 # Planned updates
 
-- Remembering the last time you backed up a directory (or fetching it from the server) and automatically generating the correct number of seconds
 - Splitting files larger than the maximum block size using `split`
-- Redirecting gsync's output to a pipe and creating another thread to read from it and print out the upload percentage to the user on the right using an ncurses library, instead of what we currently do which is either redirect it to /dev/null or display the whole output to the user, which gets interrupted when the generation of a block finishes.
